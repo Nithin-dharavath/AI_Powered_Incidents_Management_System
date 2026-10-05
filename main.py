@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from database.models import Users
 from database.connection import get_db
 from Pydantic_validation.signup import signupRequest, loginRequest
+
+templates = Jinja2Templates(directory="templates")
 
 app = FastAPI(   
     title="AI Incidentt powered management system",
@@ -15,12 +18,11 @@ app = FastAPI(
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @app.get("/health")
-async def healthCheck():
-    return{
-        "status" : "200",
-        "version" : "1.0.0",
-        "condition" : "working"
-    }
+async def healthCheck(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="health.html"
+    )
 
 @app.post("/register")
 async def userRegister(user: signupRequest, db : Session = Depends(get_db)):
